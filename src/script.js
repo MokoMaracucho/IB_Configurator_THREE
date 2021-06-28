@@ -5,6 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 import { gsap } from 'gsap';
+import { Vector3 } from 'three';
 
 // SCENE
 let sceneReady = false;
@@ -31,16 +32,16 @@ scene.add(cameraTarget_MESH);
 // CAMERA
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
 camera.position.x = 0;
-camera.position.y = 10;
-camera.position.z = 20;
+camera.position.y = 5;
+camera.position.z = 10;
 scene.add(camera);
 
 // CONTROLS
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
 controls.target.y = hauteurTargetCamera;
-//controls.minDistance = ;
-//controls.maxDistance = ;
+controls.minDistance = 5;
+controls.maxDistance = 15;
 controls.update();
 
 // RENDERER
@@ -51,6 +52,8 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 // RAYCASTER
 const raycaster = new THREE.Raycaster();
@@ -75,6 +78,21 @@ let isIntersecting = false;
 // LIGHT
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+
+const directionnalLight = new THREE.DirectionalLight("#ffffff", 0);
+directionnalLight.position.set(0, 10, 0);
+directionnalLight.castShadow = true;
+directionnalLight.shadow.camera.far = 30;
+directionnalLight.shadow.camera.left = 40;
+directionnalLight.shadow.camera.right = -40;
+directionnalLight.shadow.camera.top = 40;
+directionnalLight.shadow.camera.bottom = -40;
+directionnalLight.shadow.mapSize.set(2048, 2048);
+directionnalLight.shadow.normalBias = 0.1;
+scene.add(directionnalLight);
+
+/* const directionnalLightCameraHelper = new THREE.CameraHelper(directionnalLight.shadow.camera);
+scene.add(directionnalLightCameraHelper); */
 
 const pointLight = new THREE.PointLight(0xffffff, 0.2);
 pointLight.position.x = 2;
@@ -457,6 +475,14 @@ loader.load(
 	}
 );
 
+const television_cache_GEOMETRY = new THREE.PlaneGeometry(9.5, 5);
+const television_cache_MATERIAL = new THREE.MeshBasicMaterial({color: 0x000000});
+const television_CACHE = new THREE.Mesh(television_cache_GEOMETRY, television_cache_MATERIAL);
+television_CACHE.position.y = 3.5;
+television_CACHE.position.z = 0.3;
+television_CACHE.rotation.y = Math.PI;
+Television_GROUP.add(television_CACHE);
+
 const television_ground_GEOMETRY = new THREE.PlaneGeometry(20, 20);
 const television_ground_MATERIAL = new THREE.MeshBasicMaterial( {color: 0x000000, transparent: false, alphaMap: television_ground_ALPHA_MAP} );
 const television_GROUND = new THREE.Mesh(television_ground_GEOMETRY, television_ground_MATERIAL);
@@ -490,7 +516,7 @@ let Rubber_black_MESH = new THREE.Object3D;
 let Glass_flash_MESH = new THREE.Object3D;
 let Gold_PHONE_MESH = new THREE.Object3D;
 
-const phone_ground_ALPHA_MAP = textureLoader.load('/img/textures/Samsung_SMART_TV/phone_ground_ALPHA_MAP.jpg');
+const phone_ground_ALPHA_MAP = textureLoader.load('/img/textures/iPhone_12_Pro/phone_ground_ALPHA_MAP.jpg');
 
 const loadPhoneMesh = function () {
     console.log("------------------------------------> START phone loader");
@@ -509,8 +535,8 @@ const loadPhoneMesh = function () {
             Body_black_MESH = gltf.scene.getObjectByName("iPhone_12_Pro_1", true);
             let Body_black_MATERIAL = new THREE.MeshStandardMaterial();
             Body_black_MATERIAL.color = new THREE.Color( 0xe1e2dc );
-            Body_black_MATERIAL.metalness = 0.4;
-            Body_black_MATERIAL.roughness = 0.4;
+            Body_black_MATERIAL.metalness = 0.6;
+            Body_black_MATERIAL.roughness = 0.2;
             Body_black_MATERIAL.envMap = environnementMapTexture;
             Body_black_MESH.material = Body_black_MATERIAL;
             
@@ -534,10 +560,12 @@ const loadPhoneMesh = function () {
 
             // 4 = Glass_matte
             Glass_matte_MESH = gltf.scene.getObjectByName("iPhone_12_Pro_4", true);
-            let Glass_matte_MATERIAL = new THREE.MeshStandardMaterial();
-            Glass_matte_MATERIAL.color = new THREE.Color( 0x000000 );
-            Glass_matte_MATERIAL.metalness = 0.85;
-            Glass_matte_MATERIAL.roughness = 0.35;
+            let Glass_matte_MATERIAL = new THREE.MeshPhysicalMaterial();
+            Glass_matte_MATERIAL.color = new THREE.Color( 0xe1e2dc );
+            Glass_matte_MATERIAL.metalness = 0.6;
+            Glass_matte_MATERIAL.roughness = 0.4;
+            Glass_matte_MATERIAL.clearcoat = 1;
+            Glass_matte_MATERIAL.clearcoatRoughness = 0;
             Glass_matte_MATERIAL.envMap = environnementMapTexture;
             Glass_matte_MESH.material = Glass_matte_MATERIAL;
 
@@ -592,7 +620,7 @@ const loadPhoneMesh = function () {
             let Screen12Pro_black_MATERIAL = new THREE.MeshStandardMaterial();
             Screen12Pro_black_MATERIAL.map = texture;
             Screen12Pro_black_MATERIAL.emissiveMap = texture;
-            Screen12Pro_black_MATERIAL.emissiveIntensity = 0.8;
+            Screen12Pro_black_MATERIAL.emissiveIntensity = 2;
             Screen12Pro_black_MATERIAL.envMap = environnementMapTexture;
             Screen12Pro_black_MESH.material = Screen12Pro_black_MATERIAL;
 
@@ -696,6 +724,7 @@ canvas.addEventListener('click', () => {
         switch(phone_COLOR) {
             case 'white':
                 Body_black_MESH.material.color.set('#585753');
+                Glass_matte_MESH.material.color.set('#585753');
                 phone_COLOR = 'black';
 
                 animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
@@ -703,6 +732,7 @@ canvas.addEventListener('click', () => {
                 break;
             case 'black':
                 Body_black_MESH.material.color.set('#efe0cb');
+                Glass_matte_MESH.material.color.set('#efe0cb');
                 phone_COLOR = 'beige';
                 
                 animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
@@ -710,6 +740,7 @@ canvas.addEventListener('click', () => {
                 break;
             case 'beige':
                 Body_black_MESH.material.color.set('#384f5d');
+                Glass_matte_MESH.material.color.set('#384f5d');
                 phone_COLOR = 'green';
                 
                 animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
@@ -717,6 +748,7 @@ canvas.addEventListener('click', () => {
                 break;
             case 'green':
                 Body_black_MESH.material.color.set('#e1e2dc');
+                Glass_matte_MESH.material.color.set('#e1e2dc');
                 phone_COLOR = 'white';
                 
                 animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
@@ -731,6 +763,8 @@ canvas.addEventListener('click', () => {
 
 const Headphone_GROUP = new THREE.Group();
 scene.add(Headphone_GROUP);
+
+//Headphone_GROUP.add(directionnalLight, directionnalLightCameraHelper);
 
 let Headphone_TOP_MESH = new THREE.Object3D;
 
@@ -750,6 +784,8 @@ const loadHeadphoneTopMesh = function () {
             Headphone_TOP_MESH = gltf.scene;
             Headphone_TOP_MESH.traverse(function(child) {
                 console.log(child);
+                child.castShadow = true;
+                child.receiveShadow = true;
             });
             Headphone_GROUP.add(Headphone_TOP_MESH);
 
@@ -821,6 +857,8 @@ const loadHeadphoneRightMesh = function () {
             Headphone_RIGHT_MESH = gltf.scene;
             Headphone_RIGHT_MESH.traverse(function(child) {
                 console.log(child);
+                child.castShadow = true;
+                child.receiveShadow = true;
             });
             Headphone_RIGHT_MESH.position.x = -2.75119;
             Headphone_RIGHT_MESH.position.z = 0.00743;
@@ -937,6 +975,8 @@ const loadHeadphoneLeftMesh = function () {
             Headphone_LEFT_MESH = gltf.scene;
             Headphone_LEFT_MESH.traverse(function(child) {
                 console.log(child);
+                child.castShadow = true;
+                child.receiveShadow = true;
             });
             Headphone_LEFT_MESH.position.x = 2.75119;
             Headphone_LEFT_MESH.position.z = 0.00743;
@@ -1027,14 +1067,38 @@ const loadHeadphoneLeftMesh = function () {
 }
 
 const headphone_ground_GEOMETRY = new THREE.PlaneGeometry(20, 20);
-const headphone_ground_MATERIAL = new THREE.MeshBasicMaterial( {color: 0x000000, transparent: false, alphaMap: headphone_ground_ALPHA_MAP} );
+//const headphone_ground_MATERIAL = new THREE.MeshBasicMaterial( {color: 0x000000, transparent: false, alphaMap: headphone_ground_ALPHA_MAP} );
+const headphone_ground_MATERIAL = new THREE.MeshBasicMaterial( {color: 0xffffff, transparent: false} );
 const headphone_GROUND = new THREE.Mesh(headphone_ground_GEOMETRY, headphone_ground_MATERIAL);
+headphone_GROUND.receiveShadow = true;
 headphone_GROUND.rotation.x = - Math.PI / 2;
 
-Headphone_GROUP.add(headphone_GROUND);
+//Headphone_GROUP.add(headphone_GROUND);
 Headphone_GROUP.activeItem = false;
 Headphone_GROUP.visible = false;
 Headphone_GROUP.positionItem = 3;
+
+let headphone_STATE = true;
+
+canvas.addEventListener('click', () => {
+    let animation = gsap.timeline();
+
+    if(isIntersecting == true) {
+        if(headphone_STATE) {
+            headphone_STATE = false;
+            animation.to(Headphone_RIGHT_GROUP.rotation, {duration: 0.6, z: -1.28, ease: "power2"})
+            animation.to(Headphone_LEFT_GROUP.rotation, {duration: 0.6, z: 0.78, ease: "power2"})
+            animation.to(Headphone_GROUP.position, {duration: 0.6, y: -1.6, ease: "power2"})
+        } else {
+            headphone_STATE = true;
+            animation.to(Headphone_GROUP.position, {duration: 0.6, y: 0, ease: "power2"})
+            animation.to(Headphone_LEFT_GROUP.rotation, {duration: 0.6, z: -0.02, ease: "power2"})
+            animation.to(Headphone_RIGHT_GROUP.rotation, {duration: 0.6, z: 0.02, ease: "power2"})
+        }
+
+        console.log("------------------------------------> isIntersecting : " + isIntersecting);
+    }
+});
 
 // EVENTS MENU LEFT
 
@@ -1052,8 +1116,9 @@ span_category_televisions_ELEMENT.addEventListener('click', () => {
     gsap.to(controls.target, {duration: 2, x: positionXNextItem});
     gsap.to(cameraTarget_MESH.position, {duration: 2, x: positionXNextItem});
     gsap.to(camera.position, {duration: 2, x: positionXNextItem});
-    gsap.to(camera.position, {duration: 2, y: 10});
-    gsap.to(camera.position, {duration: 2, z: 20});
+    gsap.to(camera.position, {duration: 2, y: 5});
+    gsap.to(camera.position, {duration: 2, z: 10});
+    directionnalLight.intensity = 0;
 });
 
 const span_category_phones_ELEMENT = document.querySelector('#span_category_phones');
@@ -1070,8 +1135,9 @@ span_category_phones_ELEMENT.addEventListener('click', () => {
     gsap.to(controls.target, {duration: 2, x: positionXNextItem});
     gsap.to(cameraTarget_MESH.position, {duration: 2, x: positionXNextItem});
     gsap.to(camera.position, {duration: 2, x: positionXNextItem});
-    gsap.to(camera.position, {duration: 2, y: 10});
-    gsap.to(camera.position, {duration: 2, z: 20});
+    gsap.to(camera.position, {duration: 2, y: 5});
+    gsap.to(camera.position, {duration: 2, z: 10});
+    directionnalLight.intensity = 0;
 });
 
 const span_category_headphones_ELEMENT = document.querySelector('#span_category_headphones');
@@ -1088,8 +1154,11 @@ span_category_headphones_ELEMENT.addEventListener('click', () => {
     gsap.to(controls.target, {duration: 2, x: positionXNextItem});
     gsap.to(cameraTarget_MESH.position, {duration: 2, x: positionXNextItem});
     gsap.to(camera.position, {duration: 2, x: positionXNextItem});
-    gsap.to(camera.position, {duration: 2, y: 10});
-    gsap.to(camera.position, {duration: 2, z: 20});
+    gsap.to(camera.position, {duration: 2, y: 5});
+    gsap.to(camera.position, {duration: 2, z: 10});
+    directionnalLight.intensity = 1;
+    //directionnalLight.position.x = positionNextItem;
+    //directionnalLightCameraHelper.position.x = positionNextItem;
 });
 
 const setActiveItemFalse = function() {
@@ -1165,6 +1234,39 @@ const animate = function () {
             Rubber_black_MESH,
             Glass_flash_MESH,
             Gold_MESH
+        ];
+        const intersects = raycaster.intersectObjects(objectsToTest);
+
+        if(intersects.length > 0) {
+            isIntersecting = true;
+            console.log(isIntersecting);
+        } else {
+            isIntersecting = false;
+            console.log(isIntersecting);
+        }
+    }
+
+    if (Headphone_GROUP.activeItem == true) {
+        const objectsToTest = [
+            Matte_Gray_TOP_MESH,
+            Gloss_Gold_TOP_MESH,
+            Matte_Gold_TOP_MESH,
+            Matte_Gray_RIGHT_MESH,
+            Gloss_Gold_RIGHT_MESH,
+            Light_RIGHT_MESH,
+            Matte_Gold_RIGHT_MESH,
+            Leather_RIGHT_MESH,
+            Fabric_RIGHT_MESH,
+            Chrome_RIGHT_MESH,
+            Matte_Black_RIGHT_MESH,
+            Matte_Gray_LEFT_MESH,
+            Gloss_Gold_LEFT_MESH,
+            Light_LEFT_MESH,
+            Matte_Gold_LEFT_MESH,
+            Leather_LEFT_MESH,
+            Fabric_LEFT_MESH,
+            Chrome_LEFT_MESH,
+            Matte_Black_LEFT_MESH
         ];
         const intersects = raycaster.intersectObjects(objectsToTest);
 
