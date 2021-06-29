@@ -10,6 +10,7 @@ import { Vector3 } from 'three';
 // SCENE
 let sceneReady = false;
 const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xff0000, 10, 500);
 
 // CANVAS
 const canvas = document.querySelector('canvas.webgl');
@@ -83,10 +84,10 @@ const directionnalLight = new THREE.DirectionalLight("#ffffff", 0);
 directionnalLight.position.set(0, 10, 0);
 directionnalLight.castShadow = true;
 directionnalLight.shadow.camera.far = 30;
-directionnalLight.shadow.camera.left = 40;
-directionnalLight.shadow.camera.right = -40;
-directionnalLight.shadow.camera.top = 40;
-directionnalLight.shadow.camera.bottom = -40;
+directionnalLight.shadow.camera.left = 50;
+directionnalLight.shadow.camera.right = -50;
+directionnalLight.shadow.camera.top = 50;
+directionnalLight.shadow.camera.bottom = -50;
 directionnalLight.shadow.mapSize.set(2048, 2048);
 directionnalLight.shadow.normalBias = 0.1;
 scene.add(directionnalLight);
@@ -138,16 +139,16 @@ const loadingManager = new THREE.LoadingManager(
             loadingBarElement.classList.add('ended');
             loadingBarElement.style.transform = '';
 
-            gsap.delayedCall(0.5, () => {
+            gsap.delayedCall(0.8, () => {
                 loadPhoneMesh();
 
-                gsap.delayedCall(0.5, () => {
+                gsap.delayedCall(0.8, () => {
                     loadHeadphoneTopMesh();
 
-                    gsap.delayedCall(0.5, () => {
+                    gsap.delayedCall(0.8, () => {
                         loadHeadphoneRightMesh();
 
-                        gsap.delayedCall(0.5, () => {
+                        gsap.delayedCall(0.8, () => {
                             loadHeadphoneLeftMesh();
                         });
                     });
@@ -718,46 +719,49 @@ Phone_GROUP.visible = false;
 Phone_GROUP.positionItem = 2;
 
 let phone_COLOR = 'white';
-canvas.addEventListener('click', () => {
-    let animation = gsap.timeline();
-    if(isIntersecting == true) {
-        switch(phone_COLOR) {
-            case 'white':
-                Body_black_MESH.material.color.set('#585753');
-                Glass_matte_MESH.material.color.set('#585753');
-                phone_COLOR = 'black';
 
-                animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
-                    .to(Phone_GROUP.position, {duration: 2, z: 0, ease: "elastic"});
-                break;
-            case 'black':
-                Body_black_MESH.material.color.set('#efe0cb');
-                Glass_matte_MESH.material.color.set('#efe0cb');
-                phone_COLOR = 'beige';
-                
-                animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
-                    .to(Phone_GROUP.position, {duration: 2, z: 0, ease: "elastic"});
-                break;
-            case 'beige':
-                Body_black_MESH.material.color.set('#384f5d');
-                Glass_matte_MESH.material.color.set('#384f5d');
-                phone_COLOR = 'green';
-                
-                animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
-                    .to(Phone_GROUP.position, {duration: 2, z: 0, ease: "elastic"});
-                break;
-            case 'green':
-                Body_black_MESH.material.color.set('#e1e2dc');
-                Glass_matte_MESH.material.color.set('#e1e2dc');
-                phone_COLOR = 'white';
-                
-                animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
-                    .to(Phone_GROUP.position, {duration: 2, z: 0, ease: "elastic"});
-                break;
-        } 
-        console.log("------------------------------------> isIntersecting : " + isIntersecting);
-    }
-});
+if(clickActive) {
+    canvas.addEventListener('click', () => {
+        let animation = gsap.timeline();
+        if(isIntersecting == true) {
+            switch(phone_COLOR) {
+                case 'white':
+                    Body_black_MESH.material.color.set('#585753');
+                    Glass_matte_MESH.material.color.set('#585753');
+                    phone_COLOR = 'black';
+
+                    animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
+                        .to(Phone_GROUP.position, {duration: 2, z: 0, ease: "elastic"});
+                    break;
+                case 'black':
+                    Body_black_MESH.material.color.set('#efe0cb');
+                    Glass_matte_MESH.material.color.set('#efe0cb');
+                    phone_COLOR = 'beige';
+                    
+                    animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
+                        .to(Phone_GROUP.position, {duration: 2, z: 0, ease: "elastic"});
+                    break;
+                case 'beige':
+                    Body_black_MESH.material.color.set('#384f5d');
+                    Glass_matte_MESH.material.color.set('#384f5d');
+                    phone_COLOR = 'green';
+                    
+                    animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
+                        .to(Phone_GROUP.position, {duration: 2, z: 0, ease: "elastic"});
+                    break;
+                case 'green':
+                    Body_black_MESH.material.color.set('#e1e2dc');
+                    Glass_matte_MESH.material.color.set('#e1e2dc');
+                    phone_COLOR = 'white';
+                    
+                    animation.to(Phone_GROUP.position, {duration: 0.3, z: 0.5, ease: "power1"})
+                        .to(Phone_GROUP.position, {duration: 2, z: 0, ease: "elastic"});
+                    break;
+            } 
+            console.log("------------------------------------> isIntersecting : " + isIntersecting);
+        }
+    });
+}
 
 // HEADPHONE
 
@@ -1080,25 +1084,27 @@ Headphone_GROUP.positionItem = 3;
 
 let headphone_STATE = true;
 
-canvas.addEventListener('click', () => {
-    let animation = gsap.timeline();
+if(clickActive) {
+    canvas.addEventListener('click', () => {
+        let animation = gsap.timeline();
 
-    if(isIntersecting == true) {
-        if(headphone_STATE) {
-            headphone_STATE = false;
-            animation.to(Headphone_RIGHT_GROUP.rotation, {duration: 0.6, z: -1.28, ease: "power2"})
-            animation.to(Headphone_LEFT_GROUP.rotation, {duration: 0.6, z: 0.78, ease: "power2"})
-            animation.to(Headphone_GROUP.position, {duration: 0.6, y: -1.6, ease: "power2"})
-        } else {
-            headphone_STATE = true;
-            animation.to(Headphone_GROUP.position, {duration: 0.6, y: 0, ease: "power2"})
-            animation.to(Headphone_LEFT_GROUP.rotation, {duration: 0.6, z: -0.02, ease: "power2"})
-            animation.to(Headphone_RIGHT_GROUP.rotation, {duration: 0.6, z: 0.02, ease: "power2"})
+        if(isIntersecting == true) {
+            if(headphone_STATE) {
+                headphone_STATE = false;
+                animation.to(Headphone_RIGHT_GROUP.rotation, {duration: 0.6, z: -1.28, ease: "power2"})
+                animation.to(Headphone_LEFT_GROUP.rotation, {duration: 0.6, z: 0.78, ease: "power2"})
+                animation.to(Headphone_GROUP.position, {duration: 0.6, y: -1.6, ease: "power2"})
+            } else {
+                headphone_STATE = true;
+                animation.to(Headphone_GROUP.position, {duration: 0.6, y: 0, ease: "power2"})
+                animation.to(Headphone_LEFT_GROUP.rotation, {duration: 0.6, z: -0.02, ease: "power2"})
+                animation.to(Headphone_RIGHT_GROUP.rotation, {duration: 0.6, z: 0.02, ease: "power2"})
+            }
+
+            console.log("------------------------------------> isIntersecting : " + isIntersecting);
         }
-
-        console.log("------------------------------------> isIntersecting : " + isIntersecting);
-    }
-});
+    });
+};
 
 // EVENTS MENU LEFT
 
@@ -1205,6 +1211,15 @@ const setPositionXNextItem = function(PreviewItemDatas, positionNextItem) {
     return positionXNextItem;
 };
 
+let clickActive = true;
+
+let cameraPreviousPositionX = camera.position.x;
+let cameraPreviousPositionY = camera.position.y;
+let cameraPreviousPositionZ = camera.position.z;
+let cameraNewPositionX;
+let cameraNewPositionY;
+let cameraNewPositionZ;
+
 // ANIMATE
 const animate = function () {
     requestAnimationFrame( animate );
@@ -1212,6 +1227,19 @@ const animate = function () {
     Television_GROUP.rotation.y += televisionGroup_ROTATION_Y;
 
     camera.lookAt(cameraTarget_MESH.position.x, cameraTarget_MESH.position.y, cameraTarget_MESH.position.z);
+
+    cameraPreviousPositionX = cameraNewPositionX;
+    cameraNewPositionX = camera.position.x;
+    cameraPreviousPositionY = cameraNewPositionY;
+    cameraNewPositionY = camera.position.y;
+    cameraPreviousPositionZ = cameraNewPositionZ;
+    cameraNewPositionZ = camera.position.z;
+    
+    if(cameraPreviousPositionX === cameraNewPositionX, cameraPreviousPositionX === cameraNewPositionX, cameraPreviousPositionX === cameraNewPositionX) {
+        clickActive = true;
+    } else {
+        clickActive = false;
+    }
 
     raycaster.setFromCamera(mousePosition_THREE, camera);
 
